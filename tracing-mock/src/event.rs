@@ -1,12 +1,42 @@
+//! An [`ExpectedEvent`] defines an event to be matched by the mock
+//! collector API in the [`collector`] module.
+//!
+//! The expected event should be created with [`expect::event`] and a
+//! chain of method calls to describe the assertions we wish to make
+//! about the event.
+//!
+//! ```
+//! use tracing::collect::with_default;
+//! use tracing_mock::{collector, expect};
+//!
+//! let event = expect::event()
+//!     .at_level(tracing::Level::INFO)
+//!     .with_fields(expect::field("field.name").with_value(&"field_value"));
+//!
+//! let (collector, handle) = collector::mock()
+//!     .event(event)
+//!     .run_with_handle();
+//!
+//! with_default(collector, || {
+//!     tracing::info!(field.name = "field_value")
+//! });
+//!
+//! handle.assert_finished();
+//! ```
+//!
+//! [`collector`]: mod@crate::collector
+//! [`expect::event`]: fn@crate::expect::event
 #![allow(missing_docs)]
 use super::{expect, field, metadata::ExpectedMetadata, span, Parent};
 
 use std::fmt;
 
-/// A mock event.
+/// An expected event.
 ///
-/// This is intended for use with the mock subscriber API in the
-/// `subscriber` module.
+/// For a detailed description and examples see the documentation for
+/// the methods and the [`event`] module.
+///
+/// [`event`]: fn@crate::event
 #[derive(Default, Eq, PartialEq)]
 pub struct ExpectedEvent {
     pub(super) fields: Option<field::ExpectedFields>,
