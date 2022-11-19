@@ -50,6 +50,36 @@ pub fn msg(message: impl fmt::Display) -> ExpectedEvent {
 }
 
 impl ExpectedEvent {
+    /// Sets the expected name to match an event.
+    ///
+    /// By default an event's name takes takes the form:
+    /// `event <file>:<line>` where `<file>` and `<line>` refer to the
+    /// location in the source code where the event was generated.
+    ///
+    /// To overwrite the name of an event, it has to be constructed
+    /// directly instead of using one of the available macros.
+    ///
+    /// ```
+    /// use tracing::collect::with_default;
+    /// use tracing_core::{metadata::Metadata, fields::FieldSet};
+    /// use tracing_mock::{collector, expect};
+    ///
+    /// let event = expect::event()
+    ///     .named("mog")
+    ///     .at_level(tracing::Level::INFO)
+    ///     .with_fields(expect::field("field.name").with_value(&"field_value"));
+    ///
+    /// let (collector, handle) = collector::mock()
+    ///     .event(event)
+    ///     .run_with_handle();
+    ///
+    /// with_default(collector, || {
+    ///     tracing::Event::dispatch(Metadata::new("my name", "target", tracing::Level::INFO, None, None, None, FieldSet))
+    ///     tracing::info!(field.name = "field_value")
+    /// });
+    ///
+    /// handle.assert_finished();
+    /// ```
     pub fn named<I>(self, name: I) -> Self
     where
         I: Into<String>,
